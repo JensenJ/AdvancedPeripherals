@@ -222,6 +222,15 @@ repositories {
             includeGroup "site.siredvin.ttoolkit"
         }
     }
+
+    maven {
+        url = uri("https://maven.pkg.github.com/fnuecke/oc2/")
+        credentials {
+            username = "anything"
+            password = "\u0067hp_pnP5hVDYXXhhXwe21IEkrUzGjquUJL0xjLzb"
+        }
+    }
+
 }
 
 configurations {
@@ -231,14 +240,20 @@ configurations {
 }
 
 
-
 dependencies {
     // Minimal requirements
     compileOnly "org.jetbrains:annotations:${jb_annotations}"
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     implementation fg.deobf("org.squiddev:cc-tweaked-${cc_version}")
+
     // Compile-time API required
+    //OC2
+    implementation fg.deobf("li.cil.oc2:oc2-1.18.1-forge:0.1.5") {
+        transitive false
+    }
+    //Ae2
     compileOnly fg.deobf("appeng:appliedenergistics2:${appliedenergistics_version}")
+    //Curios
     compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}:api")
     // Minimal requirements end
 
@@ -376,7 +391,7 @@ curseforge {
 }
 
 
-task publishModrinth (type: TaskModrinthUpload) {
+task publishModrinth(type: TaskModrinthUpload) {
     dependsOn('assemble', 'reobfJar')
     onlyIf {
         modrinthKey

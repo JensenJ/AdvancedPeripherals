@@ -18,6 +18,7 @@ import de.srendi.advancedperipherals.common.configuration.APConfig;
 import de.srendi.advancedperipherals.common.util.LuaConverter;
 import de.srendi.advancedperipherals.lib.peripherals.BasePeripheral;
 import de.srendi.advancedperipherals.lib.peripherals.IPeripheralPlugin;
+import li.cil.oc2.api.bus.device.object.Callback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -80,6 +81,7 @@ public class EnvironmentDetectorPeripheral extends BasePeripheral<IPeripheralOwn
         return APConfig.PERIPHERALS_CONFIG.ENABLE_ENERGY_DETECTOR.get();
     }
 
+    @Callback
     @LuaFunction(mainThread = true)
     public final String getBiome() {
         String biomeName = getLevel().getBiome(getPos()).getRegistryName().toString();
@@ -87,16 +89,19 @@ public class EnvironmentDetectorPeripheral extends BasePeripheral<IPeripheralOwn
         return biome[1];
     }
 
+    @Callback
     @LuaFunction(mainThread = true)
     public final int getSkyLightLevel() {
         return getLevel().getBrightness(LightLayer.SKY, getPos().offset(0, 1, 0));
     }
 
+    @Callback
     @LuaFunction(mainThread = true)
     public final int getBlockLightLevel() {
         return getLevel().getBrightness(LightLayer.BLOCK, getPos().offset(0, 1, 0));
     }
 
+    @Callback
     @LuaFunction(mainThread = true)
     public final int getDayLightLevel() {
         Level level = getLevel();
@@ -111,37 +116,44 @@ public class EnvironmentDetectorPeripheral extends BasePeripheral<IPeripheralOwn
         return i;
     }
 
+    @Callback
     @LuaFunction(mainThread = true)
     public final long getTime() {
         return getLevel().getDayTime();
     }
 
+    @Callback
     @LuaFunction(mainThread = true)
     public final boolean isSlimeChunk() {
         ChunkPos chunkPos = new ChunkPos(getPos());
         return (WorldgenRandom.seedSlimeChunk(chunkPos.x, chunkPos.z, ((WorldGenLevel) getLevel()).getSeed(), 987234911L).nextInt(10) == 0);
     }
 
+    @Callback
     @LuaFunction(mainThread = true)
     public final String getDimensionProvider() {
         return getLevel().dimension().getRegistryName().getNamespace();
     }
 
+    @Callback
     @LuaFunction(mainThread = true)
     public final String getDimensionName() {
         return getLevel().dimension().getRegistryName().getPath();
     }
 
+    @Callback
     @LuaFunction(mainThread = true)
     public final String getDimensionPaN() {
         return getLevel().dimension().getRegistryName().toString();
     }
 
+    @Callback
     @LuaFunction(mainThread = true)
     public final boolean isDimension(String dimension) {
         return getLevel().dimension().getRegistryName().getPath().equals(dimension);
     }
 
+    @Callback
     @LuaFunction(mainThread = true)
     public final Set<String> listDimensions() {
         Set<String> dimensions = new HashSet<>();
@@ -149,6 +161,7 @@ public class EnvironmentDetectorPeripheral extends BasePeripheral<IPeripheralOwn
         return dimensions;
     }
 
+    @Callback
     @LuaFunction(mainThread = true)
     public final int getMoonId() {
         return getCurrentMoonPhase().keySet().toArray(new Integer[0])[0];
@@ -159,6 +172,7 @@ public class EnvironmentDetectorPeripheral extends BasePeripheral<IPeripheralOwn
         return getCurrentMoonPhase().containsKey(phase);
     }*/
 
+    @Callback
     @LuaFunction(mainThread = true)
     public final String getMoonName() {
         String[] name = getCurrentMoonPhase().values().toArray(new String[0]);
@@ -232,9 +246,7 @@ public class EnvironmentDetectorPeripheral extends BasePeripheral<IPeripheralOwn
             BlockPos pos = owner.getPos();
             AABB box = new AABB(pos);
             List<Map<String, Object>> entities = new ArrayList<>();
-            getLevel().getEntities((Entity) null, box.inflate(radius), entity -> entity instanceof LivingEntity).forEach(
-                    entity -> entities.add(LuaConverter.completeEntityWithPositionToLua(entity, ItemStack.EMPTY, pos))
-            );
+            getLevel().getEntities((Entity) null, box.inflate(radius), entity -> entity instanceof LivingEntity).forEach(entity -> entities.add(LuaConverter.completeEntityWithPositionToLua(entity, ItemStack.EMPTY, pos)));
             return MethodResult.of(entities);
         }, null);
     }
