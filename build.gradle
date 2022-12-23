@@ -263,7 +263,7 @@ dependencies {
     runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}")
 
     // Refined Storage
-    implementation fg.deobf("com.refinedmods:refinedstorage:${refinedstorage_version}")
+    implementation fg.deobf("com.refinedmods:refinedstorage:${refinedstorage_version}") {transitive = false}
 
     // Botania
     implementation fg.deobf("vazkii.botania:Botania:${botania_version}")
@@ -280,8 +280,8 @@ dependencies {
     runtimeOnly fg.deobf("vazkii.patchouli:Patchouli:${patchouli_version}")
 
     // Create
-    compileOnly fg.deobf("com.simibubi.create:create-1.19.2:${create_version}:all")
-    compileOnly fg.deobf("com.jozufozu.flywheel:flywheel-forge-1.19.2:${flywheel_version}")
+    implementation fg.deobf("com.simibubi.create:create-1.19.2:${create_version}:all") {transitive = false }
+    implementation fg.deobf("com.jozufozu.flywheel:flywheel-forge-1.19.2:${flywheel_version}")
 
     //Removed until fully ported
     //testImplementation fg.deobf("site.siredvin.ttoolkit:ttoolkit-${minecraft_version}:${ttoolkit_version}")
