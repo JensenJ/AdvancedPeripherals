@@ -270,13 +270,8 @@ dependencies {
     runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}")
 
     // Refined Storage
-<<<<<<< HEAD
+
     implementation fg.deobf("com.refinedmods:refinedstorage:${refinedstorage_version}") {transitive = false}
-=======
-    compileOnly fg.deobf("com.refinedmods:refinedstorage:${refinedstorage_version}")  {
-        transitive false
-    }
->>>>>>> 0eb9ae62760979d29ebc2b49ebaa36cf5de45d4e
 
     // Botania
     compileOnly fg.deobf("vazkii.botania:Botania:${botania_version}")
