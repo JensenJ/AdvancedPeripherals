@@ -6,6 +6,7 @@ import com.simibubi.create.content.contraptions.fluids.tank.FluidTankTileEntity;
 import com.simibubi.create.content.contraptions.processing.BasinTileEntity;
 import com.simibubi.create.content.contraptions.processing.burner.BlazeBurnerTileEntity;
 import com.simibubi.create.foundation.tileEntity.behaviour.scrollvalue.ScrollValueBehaviour;
+import com.simibubi.create.content.logistics.trains.management.edgePoint.station.StationTileEntity;
 import de.srendi.advancedperipherals.common.addons.computercraft.integrations.IntegrationPeripheralProvider;
 
 public class Integration implements Runnable {
@@ -17,5 +18,6 @@ public class Integration implements Runnable {
         IntegrationPeripheralProvider.registerBlockEntityIntegration(ScrollValueBehaviourIntegration::new, KineticTileEntity.class, tile -> tile.getBehaviour(ScrollValueBehaviour.TYPE) != null, 10);
         IntegrationPeripheralProvider.registerBlockEntityIntegration(BasinIntegration::new, BasinTileEntity.class);
         IntegrationPeripheralProvider.registerBlockEntityIntegration(MechanicalMixerIntegration::new, MechanicalMixerTileEntity.class);
+        IntegrationPeripheralProvider.registerBlockEntityIntegration(TrainStationIntegration::new, StationTileEntity.class);
     }
 }
