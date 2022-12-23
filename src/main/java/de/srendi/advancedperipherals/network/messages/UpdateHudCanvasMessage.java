@@ -5,7 +5,11 @@ import de.srendi.advancedperipherals.client.HudOverlayHandler;
 import de.srendi.advancedperipherals.common.argoggles.ARRenderAction;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -16,7 +20,7 @@ import java.util.function.Supplier;
 
 public class UpdateHudCanvasMessage {
     private static final String LIST = "list";
-    private List<ARRenderAction> canvas;
+    private final List<ARRenderAction> canvas;
 
     public UpdateHudCanvasMessage(List<ARRenderAction> canvas) {
         this.canvas = canvas;
@@ -25,7 +29,7 @@ public class UpdateHudCanvasMessage {
     public static UpdateHudCanvasMessage decode(FriendlyByteBuf buf) {
         ByteBufInputStream streamin = new ByteBufInputStream(buf);
         CompoundTag nbt;
-        List<ARRenderAction> canvas = new ArrayList<ARRenderAction>();
+        List<ARRenderAction> canvas = new ArrayList<>();
         try {
             nbt = NbtIo.read(streamin, NbtAccounter.UNLIMITED);
             ListTag list = nbt.getList(LIST, Tag.TAG_COMPOUND);
@@ -52,9 +56,7 @@ public class UpdateHudCanvasMessage {
     }
 
     public static void handle(UpdateHudCanvasMessage mes, Supplier<NetworkEvent.Context> cont) {
-        cont.get().enqueueWork(() -> {
-            HudOverlayHandler.updateCanvas(mes.getCanvas());
-        });
+        cont.get().enqueueWork(() -> HudOverlayHandler.updateCanvas(mes.getCanvas()));
         cont.get().setPacketHandled(true);
     }
 

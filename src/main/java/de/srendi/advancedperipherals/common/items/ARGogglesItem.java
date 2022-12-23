@@ -1,6 +1,5 @@
 package de.srendi.advancedperipherals.common.items;
 
-import de.srendi.advancedperipherals.AdvancedPeripherals;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ArmorItem;
@@ -17,7 +16,7 @@ public class ARGogglesItem extends ArmorItem {
     private static final String CONTROLLER_LEVEL = "controller_level";
 
     public ARGogglesItem() {
-        super(ArmorMaterials.LEATHER, EquipmentSlot.HEAD, new Properties().tab(AdvancedPeripherals.TAB).stacksTo(1));
+        super(ArmorMaterials.LEATHER, EquipmentSlot.HEAD, new Properties().stacksTo(1));
     }
 
     @Override
@@ -49,6 +48,7 @@ public class ARGogglesItem extends ArmorItem {
         }
     }
 
+    @Override
     public Component getDescription() {
         return Component.translatable("item.advancedperipherals.tooltip.ar_goggles");
     }
@@ -71,9 +71,9 @@ public class ARGogglesItem extends ArmorItem {
 
     @Override
     public ICapabilityProvider initCapabilities(ItemStack stack, CompoundTag nbt) {
-        if (!AdvancedPeripherals.isCuriosLoaded()) {
+        if (!AdvancedPeripherals.addons.curiosLoaded)
             return null;
-        }
+
         return CuriosHelper.createARGogglesProvider(stack);
     }
 
@@ -85,7 +85,8 @@ public class ARGogglesItem extends ArmorItem {
     @Override
     public void onArmorTick(ItemStack stack, Level level, Player player) {
         // only need to tick client side, if client is wearing them himself
-        if (!SideHelper.isClientPlayer(player)) return;
+        if (!SideHelper.isClientPlayer(player))
+            return;
         clientTick((LocalPlayer) player, stack);
     }
 
@@ -97,11 +98,13 @@ public class ARGogglesItem extends ArmorItem {
             return super.useOn(context);
         } else {
             BlockEntity entity = level.getBlockEntity(blockpos);
-            if (!(entity instanceof ARControllerEntity)) return super.useOn(context);
+            if (!(entity instanceof ARControllerEntity))
+                return super.useOn(context);
             ARControllerEntity controller = (ARControllerEntity) entity;
             if (!context.getLevel().isClientSide) {
                 ItemStack item = context.getItemInHand();
-                if (!item.hasTag()) item.setTag(new CompoundTag());
+                if (!item.hasTag())
+                    item.setTag(new CompoundTag());
                 CompoundTag nbt = item.getTag();
                 BlockPos pos = controller.getBlockPos();
                 nbt.putIntArray(CONTROLLER_POS, new int[]{pos.getX(), pos.getY(), pos.getZ()});
