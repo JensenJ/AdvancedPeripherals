@@ -15,11 +15,15 @@ import java.util.Map;
 
 public class TrainStationIntegration extends BlockEntityIntegrationPeripheral<StationTileEntity> {
 
-    public TrainStationIntegration(BlockEntity entity) { super(entity); }
+    public TrainStationIntegration(BlockEntity entity) {
+        super(entity);
+    }
 
     @NotNull
     @Override
-    public String getType() {return "trainStation";}
+    public String getType() {
+        return "trainStation";
+    }
 
     @LuaFunction(mainThread = true)
     public final boolean assemble() {
@@ -52,9 +56,9 @@ public class TrainStationIntegration extends BlockEntityIntegrationPeripheral<St
 
     @LuaFunction(mainThread = true)
     public final void setStationName(@NotNull String name) {
-        if(blockEntity.getStation().assembling){
+        if(blockEntity.getStation().assembling) {
             AllPackets.channel.sendToServer(StationEditPacket.configure(blockEntity.getBlockPos(), true, name));
-        }else{
+        } else {
             AllPackets.channel.sendToServer(StationEditPacket.configure(blockEntity.getBlockPos(), false, name));
         }
     }
@@ -64,7 +68,7 @@ public class TrainStationIntegration extends BlockEntityIntegrationPeripheral<St
         Map<String, Object> data = new HashMap<>();
         if (!isTrainPresent()) {
             data.put("success", false);
-        }else {
+        } else {
             data.put("success", true);
             data.put("name", blockEntity.getStation().getPresentTrain().name.getString());
         }
@@ -91,7 +95,6 @@ public class TrainStationIntegration extends BlockEntityIntegrationPeripheral<St
         }
         return blockEntity.getStation().getPresentTrain().carriages.size();
     }
-    
 
     @LuaFunction(mainThread = true)
     public final boolean isTrainPresent() {
