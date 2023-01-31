@@ -22,8 +22,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -137,7 +137,7 @@ public class RsBridgePeripheral extends BasePeripheral<BlockEntityPeripheralOwne
     public final MethodResult getPattern(IArguments arguments) {
         return (MethodResult) ensureIsConnected(null, () -> {
             try {
-                return RefinedStorage.getObjectFromPattern(getNetwork().getCraftingManager().getPattern(ItemUtil.getItemStackRS(arguments.getTable(0), RefinedStorage.getItems(getNetwork()))), getNetwork());
+                return MethodResult.of(RefinedStorage.getObjectFromPattern(getNetwork().getCraftingManager().getPattern(ItemUtil.getItemStackRS(arguments.getTable(0), RefinedStorage.getItems(getNetwork()))), getNetwork()));
             } catch (LuaException e) {
                 return MethodResult.of(null, "unknown: " + e.getMessage());
             }
@@ -152,7 +152,7 @@ public class RsBridgePeripheral extends BasePeripheral<BlockEntityPeripheralOwne
         Direction direction = validateSide(arguments.getString(1));
 
         BlockEntity targetEntity = owner.tileEntity.getLevel().getBlockEntity(owner.tileEntity.getBlockPos().relative(direction));
-        IItemHandler inventory = targetEntity != null ? targetEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction.getOpposite()).resolve().orElse(null) : null;
+        IItemHandler inventory = targetEntity != null ? targetEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite()).resolve().orElse(null) : null;
         if (inventory == null)
             throw new LuaException("No valid inventory at " + arguments.getString(1));
 
@@ -183,7 +183,7 @@ public class RsBridgePeripheral extends BasePeripheral<BlockEntityPeripheralOwne
         Direction direction = validateSide(arguments.getString(1));
 
         BlockEntity targetEntity = owner.tileEntity.getLevel().getBlockEntity(owner.tileEntity.getBlockPos().relative(direction));
-        IItemHandler inventory = targetEntity != null ? targetEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction.getOpposite()).resolve().orElse(null) : null;
+        IItemHandler inventory = targetEntity != null ? targetEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite()).resolve().orElse(null) : null;
         if (inventory == null)
             throw new LuaException("No valid inventory at " + arguments.getString(1));
 
@@ -218,7 +218,7 @@ public class RsBridgePeripheral extends BasePeripheral<BlockEntityPeripheralOwne
             throw new LuaException("No valid inventory block for " + arguments.getString(1));
 
         BlockEntity targetEntity = (BlockEntity) chest.getTarget();
-        IItemHandler inventory = targetEntity != null ? targetEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).resolve().orElse(null) : null;
+        IItemHandler inventory = targetEntity != null ? targetEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElse(null) : null;
         if (inventory == null)
             throw new LuaException("No valid inventory for " + arguments.getString(1));
 
@@ -253,7 +253,7 @@ public class RsBridgePeripheral extends BasePeripheral<BlockEntityPeripheralOwne
             throw new LuaException("No inventory block for " + arguments.getString(1));
 
         BlockEntity targetEntity = (BlockEntity) chest.getTarget();
-        IItemHandler inventory = targetEntity != null ? targetEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).resolve().orElse(null) : null;
+        IItemHandler inventory = targetEntity != null ? targetEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElse(null) : null;
         if (inventory == null)
             throw new LuaException("No valid inventory for " + arguments.getString(1));
 
@@ -263,16 +263,16 @@ public class RsBridgePeripheral extends BasePeripheral<BlockEntityPeripheralOwne
 
         for (int i = 0; i < inventory.getSlots(); i++) {
             if (inventory.getStackInSlot(i).sameItem(stack)) {
-                if (inventory.getStackInSlot(i).getCount() >= amount) {
-                    ItemStack insertedStack = getNetwork().insertItem(stack, amount, Action.PERFORM);
-                    inventory.extractItem(i, amount - insertedStack.getCount(), false);
-                    transferableAmount += amount - insertedStack.getCount();
+                if (inventory.getStackInSlot(i).getCount() >= (amount - transferableAmount)) {
+                    ItemStack extracted = inventory.extractItem(i, amount, false);
+                    getNetwork().insertItem(stack, extracted.getCount(), Action.PERFORM);
+                    transferableAmount += extracted.getCount();
                     break;
                 } else {
-                    amount = count - inventory.getStackInSlot(i).getCount();
-                    ItemStack insertedStack = getNetwork().insertItem(stack, inventory.getStackInSlot(i).getCount(), Action.PERFORM);
-                    inventory.extractItem(i, inventory.getStackInSlot(i).getCount() - insertedStack.getCount(), false);
-                    transferableAmount += inventory.getStackInSlot(i).getCount() - insertedStack.getCount();
+                    ItemStack extracted = inventory.extractItem(i, amount, false);
+                    amount -= extracted.getCount();
+                    getNetwork().insertItem(stack, extracted.getCount(), Action.PERFORM);
+                    transferableAmount += extracted.getCount();
                 }
             }
         }
@@ -283,7 +283,7 @@ public class RsBridgePeripheral extends BasePeripheral<BlockEntityPeripheralOwne
     public final MethodResult getItem(IArguments arguments) {
         return (MethodResult) ensureIsConnected(null, () -> {
             try {
-                return RefinedStorage.getItem(getNetwork(), ItemUtil.getItemStackRS(arguments.getTable(0), RefinedStorage.getItems(getNetwork())));
+                return MethodResult.of(RefinedStorage.getItem(getNetwork(), ItemUtil.getItemStackRS(arguments.getTable(0), RefinedStorage.getItems(getNetwork()))));
             } catch (LuaException e) {
                 return MethodResult.of(null, "unknown: " + e.getMessage());
             }

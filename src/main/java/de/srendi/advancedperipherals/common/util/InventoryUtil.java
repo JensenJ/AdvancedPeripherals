@@ -11,38 +11,22 @@ import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.wrapper.InvWrapper;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 public class InventoryUtil {
 
-    private static final List<Pair<Predicate<Object>, Function<Object, IItemHandler>>> EXTRACTORS = new ArrayList<>();
-
-    public static void registerExtractor(Predicate<Object> predicate, Function<Object, IItemHandler> handlerGenerator) {
-        EXTRACTORS.add(Pair.of(predicate, handlerGenerator));
-    }
-
     public static IItemHandler extractHandler(@Nullable Object object) {
-
-        for (Pair<Predicate<Object>, Function<Object, IItemHandler>> extractor : EXTRACTORS) {
-            if (extractor.getLeft().test(object))
-                return extractor.getRight().apply(object);
-        }
-
         if (object instanceof ICapabilityProvider capabilityProvider) {
-            LazyOptional<IItemHandler> cap = capabilityProvider.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY);
+            LazyOptional<IItemHandler> cap = capabilityProvider.getCapability(ForgeCapabilities.ITEM_HANDLER);
             if (cap.isPresent())
                 return cap.orElseThrow(NullPointerException::new);
         }
@@ -117,10 +101,10 @@ public class InventoryUtil {
     public static @NotNull IItemHandler getHandlerFromDirection(@NotNull String direction, @NotNull IPeripheralOwner owner) throws LuaException {
         Level level = owner.getLevel();
         Objects.requireNonNull(level);
-        Direction relativeDirection = LuaConverter.getDirection(owner.getFacing(), direction);
+        Direction relativeDirection = CoordUtil.getDirection(owner.getOrientation(), direction);
         BlockEntity target = level.getBlockEntity(owner.getPos().relative(relativeDirection));
         if (target == null)
-            throw new LuaException("Target '" + direction + "' is empty or defenetly not inventory");
+            throw new LuaException("Target '" + direction + "' is empty or not an inventory");
 
         IItemHandler handler = extractHandler(target);
         if (handler == null)
