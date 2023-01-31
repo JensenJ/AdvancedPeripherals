@@ -1,11 +1,9 @@
 package de.srendi.advancedperipherals.common.util;
 
 import dan200.computercraft.api.lua.LuaException;
-import dan200.computercraft.core.computer.ComputerSide;
 import dan200.computercraft.shared.util.NBTUtil;
 import de.srendi.advancedperipherals.common.addons.computercraft.peripheral.InventoryManagerPeripheral;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
@@ -15,12 +13,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.IForgeShearable;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class LuaConverter {
@@ -104,24 +101,12 @@ public class LuaConverter {
     }
 
     public static <T> List<String> tagsToList(@NotNull Supplier<Stream<TagKey<T>>> tags) {
-        if (tags.get().findAny().isEmpty()) return null;
-        return tags.get().map(LuaConverter::tagToString).collect(Collectors.toList());
+        if (tags.get().findAny().isEmpty()) return Collections.emptyList();
+        return tags.get().map(LuaConverter::tagToString).toList();
     }
 
     public static <T> String tagToString(@NotNull TagKey<T> tag) {
         return tag.registry().location() + "/" + tag.location();
-    }
-
-    public static Direction getDirection(Direction facing, String computerSide) throws LuaException {
-        if (Direction.byName(computerSide) != null) return Direction.byName(computerSide);
-        if (Objects.equals(computerSide, ComputerSide.FRONT.toString())) return facing;
-        if (Objects.equals(computerSide, ComputerSide.BACK.toString())) return facing.getOpposite();
-        if (Objects.equals(computerSide, ComputerSide.TOP.toString())) return Direction.UP;
-        if (Objects.equals(computerSide, ComputerSide.BOTTOM.toString())) return Direction.DOWN;
-        if (Objects.equals(computerSide, ComputerSide.RIGHT.toString())) return facing.getCounterClockWise();
-        if (Objects.equals(computerSide, ComputerSide.LEFT.toString())) return facing.getClockWise();
-
-        throw new LuaException(computerSide + " is not a valid side");
     }
 
     // BlockPos tricks

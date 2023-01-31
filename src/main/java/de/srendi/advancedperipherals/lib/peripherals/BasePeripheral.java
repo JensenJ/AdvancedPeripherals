@@ -7,7 +7,7 @@ import dan200.computercraft.api.peripheral.IPeripheral;
 import de.srendi.advancedperipherals.common.addons.computercraft.owner.IPeripheralOwner;
 import de.srendi.advancedperipherals.common.addons.computercraft.owner.OperationAbility;
 import de.srendi.advancedperipherals.common.addons.computercraft.owner.PeripheralOwnerAbility;
-import de.srendi.advancedperipherals.common.util.LuaConverter;
+import de.srendi.advancedperipherals.common.util.CoordUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -28,7 +28,7 @@ public abstract class BasePeripheral<O extends IPeripheralOwner> implements IBas
     protected List<IPeripheralPlugin> plugins = null;
     protected String[] methodNames = new String[0];
 
-    public BasePeripheral(String type, O owner) {
+    protected BasePeripheral(String type, O owner) {
         this.type = type;
         this.owner = owner;
     }
@@ -125,7 +125,7 @@ public abstract class BasePeripheral<O extends IPeripheralOwner> implements IBas
     protected Direction validateSide(String direction) throws LuaException {
         String dir = direction.toUpperCase(Locale.ROOT);
 
-        return LuaConverter.getDirection(owner.getFacing(), dir);
+        return CoordUtil.getDirection(owner.getOrientation(), dir);
     }
 
     @Override
