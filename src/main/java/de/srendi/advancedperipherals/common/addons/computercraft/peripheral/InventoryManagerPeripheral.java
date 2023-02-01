@@ -18,6 +18,7 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -32,10 +33,10 @@ import java.util.Optional;
 
 public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeripheralOwner<InventoryManagerEntity>> {
 
-    public static final String PERIPHERAL_TYPE = "inventoryManager";
+    public static final String TYPE = "inventoryManager";
 
     public InventoryManagerPeripheral(InventoryManagerEntity tileEntity) {
-        super(PERIPHERAL_TYPE, new BlockEntityPeripheralOwner<>(tileEntity));
+        super(TYPE, new BlockEntityPeripheralOwner<>(tileEntity));
     }
 
     private static int getArmorSlot(int index) {
@@ -45,6 +46,10 @@ public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeriph
             case 101 -> 1;
             default -> 0;
         };
+    }
+
+    private static int getOffhandSlotIndex(){
+        return 104;
     }
 
     @Override
@@ -128,6 +133,15 @@ public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeriph
                     //Continue as we don't want to run the normal code for non armor items
                     continue;
                 }
+
+                if(invSlot == 104){
+                    if (!getOwnerPlayer().getInventory().offhand.get(0).isEmpty()) continue; //If the offhand is not empty, continue
+                    getOwnerPlayer().getInventory().offhand.set(0, stack);
+                    inventoryFrom.extractItem(i, 1, false);
+                    transferableAmount = 1;
+                    continue;
+                }
+
                 inserted = InventoryUtil.moveItem(inventoryFrom, i, inventoryTo, invSlot, amount);
                 transferableAmount += inserted;
                 amount -= inserted;
@@ -173,7 +187,17 @@ public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeriph
         //With this, we can use the item parameter without need to use the slot parameter. If we don't want to use
         //the slot parameter, we can use -1
         int invSlot = -1;
-        if (slot.isPresent() && slot.get() > 0) invSlot = slot.get();
+
+        if (slot.isPresent() && slot.get() > 0) {
+            //Convert indexes which are used when getting slot numbers to work in the following code where the inventories items, armour and offhand are a single array
+            if(slot.get() == getOffhandSlotIndex()){
+                slot = Optional.of(getOwnerPlayer().getInventory().items.size() + getOwnerPlayer().getInventory().armor.size());
+
+            }else if(slot.get() >= 100 && slot.get() <= 103){
+                slot = Optional.of(getOwnerPlayer().getInventory().items.size() + (slot.get() - 100));
+            }
+            invSlot = slot.get();
+        }
 
         Direction direction = validateSide(invDirection);
 
@@ -215,7 +239,8 @@ public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeriph
                     if (!rest.isEmpty()) break;
                 }
             }
-        } else {
+        }
+        if (invSlot != -1) {
             if (!stack.isEmpty() && inventoryFrom.getItem(slot.get()).sameItem(stack)) {
                 if (inventoryFrom.getItem(slot.get()).getCount() >= amount) {
                     rest = insertItem(inventoryTo, inventoryFrom.removeItem(slot.get(), amount));
@@ -277,14 +302,59 @@ public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeriph
 
     @LuaFunction(mainThread = true)
     public final boolean isWearing(int index) throws LuaException {
-        int i = 0;
+        index = index - 100;
+        int i = 3;
         for (ItemStack stack : getOwnerPlayer().getInventory().armor) {
-            if (!stack.isEmpty()) {
-                if (index == getArmorSlot(i)) return true;
-                i++;
+            if (!stack.isEmpty() && index == i) {
+                return true;
             }
+            i--;
         }
         return false;
+    }
+
+    @Nonnull
+    @LuaFunction(mainThread = true)
+    public final List<Object> getInventory() throws LuaException {
+        List<Object> items = new ArrayList<>();
+        int i = 0; //Used to let users easily sort the items by the slots. Also, a better way for the user to see where an item actually is
+        for (ItemStack stack : getOwnerPlayer().getInventory().items) {
+            if (!stack.isEmpty()) {
+                items.add(LuaConverter.stackToObjectWithSlot(stack, i));
+            }
+            i++;
+        }
+        //Get armour
+        for (ItemStack stack : getOwnerPlayer().getInventory().armor) {
+            if (!stack.isEmpty()) {
+                items.add(LuaConverter.stackToObjectWithSlot(stack, ArmorSlot.getSlotForItem(stack)));
+            }
+        }
+        //If the player has something in their offhand, add it here
+        if(!getOwnerPlayer().getOffhandItem().isEmpty()) {
+            items.add(LuaConverter.stackToObjectWithSlot(getOwnerPlayer().getOffhandItem(), getOffhandSlotIndex()));
+        }
+
+        return items;
+    }
+
+    @LuaFunction(mainThread = true)
+    public final Object getItemInSlot(int slot) throws LuaException {
+        //If slot is offhand
+        if (slot == getOffhandSlotIndex()){
+            return LuaConverter.stackToObject(getOwnerPlayer().getInventory().offhand.get(0));
+        }else if(slot >= 100 && slot <= 103) { //If slot is armour (slot - 100) as this will return the correct slot number
+            return LuaConverter.stackToObject(getOwnerPlayer().getInventory().armor.get(slot - 100));
+        }else{ //Rest of inventory
+            int i = 0;
+            for (ItemStack stack : getOwnerPlayer().getInventory().items) {
+                if (!stack.isEmpty() && i == slot) {
+                    return LuaConverter.stackToObject(stack);
+                }
+                i++;
+            }
+            return null;
+        }
     }
 
     @LuaFunction(mainThread = true)
@@ -329,6 +399,10 @@ public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeriph
     private Player getOwnerPlayer() throws LuaException {
         if (owner.getOwner() == null)
             throw new LuaException("The Inventory Manager doesn't have a memory card or it isn't bound to a player.");
+        if(owner.getOwner().position().distanceTo(new Vec3(owner.getPos().getX(), owner.getPos().getY(), owner.getPos().getZ())) > APConfig.PERIPHERALS_CONFIG.inventoryManagerRange.get()){
+            throw new LuaException("That player is out of range of the Inventory Manager. (" + APConfig.PERIPHERALS_CONFIG.inventoryManagerRange.get() + " blocks)");
+        }
+
         return owner.getOwner();
     }
 
