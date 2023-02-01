@@ -49,6 +49,10 @@ public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeriph
         };
     }
 
+    private static int getOffhandSlotIndex(){
+        return 104;
+    }
+
     @Override
     public boolean isEnabled() {
         return APConfig.PERIPHERALS_CONFIG.enableInventoryManager.get();
@@ -280,6 +284,7 @@ public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeriph
 
     @LuaFunction(mainThread = true)
     public final boolean isWearing(int index) throws LuaException {
+        index = index - 100;
         int i = 3;
         for (ItemStack stack : getOwnerPlayer().getInventory().armor) {
             if (!stack.isEmpty() && index == i) {
@@ -301,20 +306,37 @@ public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeriph
             }
             i++;
         }
-
         //Get armour
         for (ItemStack stack : getOwnerPlayer().getInventory().armor) {
             if (!stack.isEmpty()) {
                 items.add(LuaConverter.stackToObjectWithSlot(stack, ArmorSlot.getSlotForItem(stack)));
             }
         }
-
         //If the player has something in their offhand, add it here
         if(!getOwnerPlayer().getOffhandItem().isEmpty()) {
-            items.add(LuaConverter.stackToObjectWithSlot(getOwnerPlayer().getOffhandItem(), 104));
+            items.add(LuaConverter.stackToObjectWithSlot(getOwnerPlayer().getOffhandItem(), getOffhandSlotIndex()));
         }
 
         return items;
+    }
+
+    @LuaFunction(mainThread = true)
+    public final Object getItemInSlot(int slot) throws LuaException {
+        //If slot is offhand
+        if (slot == getOffhandSlotIndex()){
+            return LuaConverter.stackToObject(getOwnerPlayer().getInventory().offhand.get(0));
+        }else if(slot >= 100 && slot <= 103) { //If slot is armour (slot - 100) as this will return the correct slot number
+            return LuaConverter.stackToObject(getOwnerPlayer().getInventory().armor.get(slot - 100));
+        }else{ //Rest of inventory
+            int i = 0;
+            for (ItemStack stack : getOwnerPlayer().getInventory().items) {
+                if (!stack.isEmpty() && i == slot) {
+                    return LuaConverter.stackToObject(stack);
+                }
+                i++;
+            }
+            return null;
+        }
     }
 
     @LuaFunction(mainThread = true)
