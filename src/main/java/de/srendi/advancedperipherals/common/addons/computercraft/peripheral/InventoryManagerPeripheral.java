@@ -278,12 +278,12 @@ public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeriph
 
     @LuaFunction(mainThread = true)
     public final boolean isWearing(int index) throws LuaException {
-        int i = 0;
+        int i = 3;
         for (ItemStack stack : getOwnerPlayer().getInventory().armor) {
-            if (!stack.isEmpty()) {
-                if (index == getArmorSlot(i)) return true;
-                i++;
+            if (!stack.isEmpty() && index == i) {
+                return true;
             }
+            i--;
         }
         return false;
     }
