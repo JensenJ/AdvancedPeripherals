@@ -235,12 +235,12 @@ public class MineColonies {
     }
 
     /**
-     * Returns a map with all possible researches
+     * Returns a list with all possible researches
      *
      * @param branch     The branch, there are only a few branches
      * @param researches The primary researches of the branch
      * @param colony     The colony
-     * @return a map with all possible researches
+     * @return a list including maps with all possible researches
      */
     public static List<Object> getResearch(ResourceLocation branch, List<ResourceLocation> researches, IColony colony) throws CommandSyntaxException {
         List<Object> result = new ArrayList<>();
@@ -285,7 +285,7 @@ public class MineColonies {
         IBuilding building = colony.getBuildingManager().getBuilding(pos);
         if (!(building instanceof AbstractBuildingStructureBuilder builderBuilding)) return null;
 
-        //We need to say the building that we want information about it
+        //We need to tell the building that we want information about it
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         builderBuilding.serializeToView(buffer);
         buffer.release();
@@ -297,7 +297,7 @@ public class MineColonies {
         for (BuildingBuilderResource resource : resources) {
             Map<String, Object> map = new HashMap<>();
 
-            map.put("item", ItemUtil.getRegistryKey(resource.getItemStack()));
+            map.put("item", ItemUtil.getRegistryKey(resource.getItemStack()).toString());
             map.put("displayName", resource.getName());
             map.put("available", resource.getAvailable());
             map.put("delivering", resource.getAmountInDelivery());

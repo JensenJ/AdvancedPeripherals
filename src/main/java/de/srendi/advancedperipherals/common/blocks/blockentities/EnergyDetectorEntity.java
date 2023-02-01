@@ -1,7 +1,6 @@
 package de.srendi.advancedperipherals.common.blocks.blockentities;
 
 import de.srendi.advancedperipherals.common.addons.computercraft.peripheral.EnergyDetectorPeripheral;
-import de.srendi.advancedperipherals.common.blocks.base.APBlockEntityBlock;
 import de.srendi.advancedperipherals.common.blocks.base.PeripheralBlockEntity;
 import de.srendi.advancedperipherals.common.configuration.APConfig;
 import de.srendi.advancedperipherals.common.setup.BlockEntityTypes;
@@ -10,12 +9,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.JigsawBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.EnergyStorage;
 import net.minecraftforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.NotNull;
@@ -50,9 +50,9 @@ public class EnergyDetectorEntity extends PeripheralBlockEntity<EnergyDetectorPe
     @NotNull
     @Override
     public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction direction) {
-        energyInDirection = getBlockState().getValue(APBlockEntityBlock.FACING);
-        energyOutDirection = getBlockState().getValue(APBlockEntityBlock.FACING).getOpposite();
-        if (cap == CapabilityEnergy.ENERGY) {
+        energyInDirection = getBlockState().getValue(JigsawBlock.ORIENTATION).front();
+        energyOutDirection = getBlockState().getValue(JigsawBlock.ORIENTATION).front().getOpposite();
+        if (cap == ForgeCapabilities.ENERGY) {
             if (direction == energyInDirection) {
                 return energyStorageCap.cast();
             } else if (direction == energyOutDirection) {
@@ -92,7 +92,7 @@ public class EnergyDetectorEntity extends PeripheralBlockEntity<EnergyDetectorPe
             if (teOut == null) {
                 return Optional.empty();
             }
-            LazyOptional<IEnergyStorage> lazyOptionalOutStorage = teOut.getCapability(CapabilityEnergy.ENERGY, energyOutDirection.getOpposite());
+            LazyOptional<IEnergyStorage> lazyOptionalOutStorage = teOut.getCapability(ForgeCapabilities.ENERGY, energyOutDirection.getOpposite());
             outReceivingStorage = lazyOptionalOutStorage.resolve();
             lazyOptionalOutStorage.addListener(l -> {
                 outReceivingStorage = Optional.empty();

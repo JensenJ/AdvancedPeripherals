@@ -62,7 +62,7 @@ public class MeBridgePeripheral extends BasePeripheral<BlockEntityPeripheralOwne
     /**
      * exports an item out of the system to a valid inventory
      *
-     * @param arguments the arguments given by the computer
+     * @param arguments       the arguments given by the computer
      * @param targetInventory the give inventory
      * @return the exportable amount
      * @throws LuaException if stack does not exist or the system is offline - will be removed in 0.8
@@ -99,7 +99,7 @@ public class MeBridgePeripheral extends BasePeripheral<BlockEntityPeripheralOwne
     /**
      * imports an item to the system from a valid inventory
      *
-     * @param arguments the arguments given by the computer
+     * @param arguments       the arguments given by the computer
      * @param targetInventory the give inventory
      * @return the imported amount
      * @throws LuaException if system is offline - will be removed in 0.8
@@ -174,7 +174,7 @@ public class MeBridgePeripheral extends BasePeripheral<BlockEntityPeripheralOwne
         ICraftingService grid = node.getGrid().getService(ICraftingService.class);
 
         ItemStack itemStack = ItemUtil.getItemStack(arguments.getTable(0), monitor);
-        return AppEngApi.isItemCrafting(monitor, grid, itemStack);
+        return AppEngApi.isItemCrafting(monitor, grid, itemStack, null);
     }
 
     @LuaFunction(mainThread = true)
