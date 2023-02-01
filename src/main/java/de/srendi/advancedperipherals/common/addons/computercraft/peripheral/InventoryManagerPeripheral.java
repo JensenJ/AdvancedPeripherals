@@ -6,7 +6,6 @@ import de.srendi.advancedperipherals.AdvancedPeripherals;
 import de.srendi.advancedperipherals.common.addons.computercraft.owner.BlockEntityPeripheralOwner;
 import de.srendi.advancedperipherals.common.blocks.blockentities.InventoryManagerEntity;
 import de.srendi.advancedperipherals.common.configuration.APConfig;
-import de.srendi.advancedperipherals.common.configuration.PeripheralsConfig;
 import de.srendi.advancedperipherals.common.util.InventoryUtil;
 import de.srendi.advancedperipherals.common.util.ItemUtil;
 import de.srendi.advancedperipherals.common.util.LuaConverter;
@@ -134,6 +133,15 @@ public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeriph
                     //Continue as we don't want to run the normal code for non armor items
                     continue;
                 }
+
+                if(invSlot == 104){
+                    if (!getOwnerPlayer().getInventory().offhand.get(0).isEmpty()) continue; //If the offhand is not empty, continue
+                    getOwnerPlayer().getInventory().offhand.set(0, stack);
+                    inventoryFrom.extractItem(i, 1, false);
+                    transferableAmount = 1;
+                    continue;
+                }
+
                 inserted = InventoryUtil.moveItem(inventoryFrom, i, inventoryTo, invSlot, amount);
                 transferableAmount += inserted;
                 amount -= inserted;
@@ -179,7 +187,17 @@ public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeriph
         //With this, we can use the item parameter without need to use the slot parameter. If we don't want to use
         //the slot parameter, we can use -1
         int invSlot = -1;
-        if (slot.isPresent() && slot.get() > 0) invSlot = slot.get();
+
+        if (slot.isPresent() && slot.get() > 0) {
+            //Convert indexes which are used when getting slot numbers to work in the following code where the inventories items, armour and offhand are a single array
+            if(slot.get() == getOffhandSlotIndex()){
+                slot = Optional.of(getOwnerPlayer().getInventory().items.size() + getOwnerPlayer().getInventory().armor.size());
+
+            }else if(slot.get() >= 100 && slot.get() <= 103){
+                slot = Optional.of(getOwnerPlayer().getInventory().items.size() + (slot.get() - 100));
+            }
+            invSlot = slot.get();
+        }
 
         Direction direction = validateSide(invDirection);
 
