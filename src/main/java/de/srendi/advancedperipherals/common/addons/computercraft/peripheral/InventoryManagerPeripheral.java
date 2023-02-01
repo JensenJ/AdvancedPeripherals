@@ -6,6 +6,7 @@ import de.srendi.advancedperipherals.AdvancedPeripherals;
 import de.srendi.advancedperipherals.common.addons.computercraft.owner.BlockEntityPeripheralOwner;
 import de.srendi.advancedperipherals.common.blocks.blockentities.InventoryManagerEntity;
 import de.srendi.advancedperipherals.common.configuration.APConfig;
+import de.srendi.advancedperipherals.common.configuration.PeripheralsConfig;
 import de.srendi.advancedperipherals.common.util.InventoryUtil;
 import de.srendi.advancedperipherals.common.util.ItemUtil;
 import de.srendi.advancedperipherals.common.util.LuaConverter;
@@ -18,6 +19,7 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -288,6 +290,33 @@ public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeriph
         return false;
     }
 
+    @Nonnull
+    @LuaFunction(mainThread = true)
+    public final List<Object> getInventory() throws LuaException {
+        List<Object> items = new ArrayList<>();
+        int i = 0; //Used to let users easily sort the items by the slots. Also, a better way for the user to see where an item actually is
+        for (ItemStack stack : getOwnerPlayer().getInventory().items) {
+            if (!stack.isEmpty()) {
+                items.add(LuaConverter.stackToObjectWithSlot(stack, i));
+            }
+            i++;
+        }
+
+        //Get armour
+        for (ItemStack stack : getOwnerPlayer().getInventory().armor) {
+            if (!stack.isEmpty()) {
+                items.add(LuaConverter.stackToObjectWithSlot(stack, ArmorSlot.getSlotForItem(stack)));
+            }
+        }
+
+        //If the player has something in their offhand, add it here
+        if(!getOwnerPlayer().getOffhandItem().isEmpty()) {
+            items.add(LuaConverter.stackToObjectWithSlot(getOwnerPlayer().getOffhandItem(), 104));
+        }
+
+        return items;
+    }
+
     @LuaFunction(mainThread = true)
     public final int getEmptySpace() throws LuaException {
         int i = 0;
@@ -330,6 +359,10 @@ public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeriph
     private Player getOwnerPlayer() throws LuaException {
         if (owner.getOwner() == null)
             throw new LuaException("The Inventory Manager doesn't have a memory card or it isn't bound to a player.");
+        if(owner.getOwner().position().distanceTo(new Vec3(owner.getPos().getX(), owner.getPos().getY(), owner.getPos().getZ())) > APConfig.PERIPHERALS_CONFIG.inventoryManagerRange.get()){
+            throw new LuaException("That player is out of range of the Inventory Manager. (" + APConfig.PERIPHERALS_CONFIG.inventoryManagerRange.get() + " blocks)");
+        }
+
         return owner.getOwner();
     }
 

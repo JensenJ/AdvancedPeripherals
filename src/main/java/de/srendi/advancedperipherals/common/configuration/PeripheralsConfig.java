@@ -37,6 +37,8 @@ public class PeripheralsConfig implements IAPConfig {
     public final ForgeConfigSpec.BooleanValue enableARGoggles;
     //Inventory Manager
     public final ForgeConfigSpec.BooleanValue enableInventoryManager;
+    public final ForgeConfigSpec.IntValue inventoryManagerRange;
+
     //Redstone Integrator
     public final ForgeConfigSpec.BooleanValue enableRedstoneIntegrator;
     //Block reader
@@ -104,6 +106,7 @@ public class PeripheralsConfig implements IAPConfig {
         pop("Inventory_Manager", builder);
 
         enableInventoryManager = builder.comment("Enable the inventory manager or not.").define("enableInventoryManager", true);
+        inventoryManagerRange = builder.comment("The maximum range of the inventory manager").defineInRange("inventoryManagerRange", Integer.MAX_VALUE, 0, Integer.MAX_VALUE);
 
         pop("Redstone_Integrator", builder);
 
