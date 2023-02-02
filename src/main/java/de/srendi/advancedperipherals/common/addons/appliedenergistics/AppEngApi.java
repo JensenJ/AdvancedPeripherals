@@ -86,7 +86,7 @@ public class AppEngApi {
         List<Object> items = new ArrayList<>();
         for (Object2LongMap.Entry<AEKey> aeKey : monitor.getAvailableStacks()) {
             if (aeKey.getKey() instanceof AEFluidKey itemKey) {
-                if ((flag == 1 && aeKey.getLongValue() < 0) || (flag == 2 && !service.isCraftable(itemKey)))
+                if (flag == 1 && aeKey.getLongValue() < 0 || flag == 2 && !service.isCraftable(itemKey))
                     continue;
 
                 items.add(getObjectFromStack(Pair.of(aeKey.getLongValue(), itemKey), service));

@@ -2,7 +2,6 @@ package de.srendi.advancedperipherals.common.addons.curios;
 
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
-import de.srendi.advancedperipherals.common.addons.APAddons;
 import de.srendi.advancedperipherals.common.addons.computercraft.owner.IPeripheralOwner;
 import de.srendi.advancedperipherals.common.configuration.APConfig;
 import de.srendi.advancedperipherals.common.util.ItemUtil;
@@ -39,9 +38,10 @@ public class InventoryManagerCurioPlugin implements IPeripheralPlugin {
     }
 
     private Player getOwnerPlayer() throws LuaException {
-        if (owner.getOwner() == null)
+        if (owner.getOwner() == null) {
             throw new LuaException("The Inventory Manager doesn't have a memory card or it isn't bound to a player.");
-        if(owner.getOwner().position().distanceTo(new Vec3(owner.getPos().getX(), owner.getPos().getY(), owner.getPos().getZ())) > APConfig.PERIPHERALS_CONFIG.inventoryManagerRange.get()){
+        }
+        if (owner.getOwner().position().distanceTo(new Vec3(owner.getPos().getX(), owner.getPos().getY(), owner.getPos().getZ())) > APConfig.PERIPHERALS_CONFIG.inventoryManagerRange.get()) {
             throw new LuaException("That player is out of range of the Inventory Manager. (" + APConfig.PERIPHERALS_CONFIG.inventoryManagerRange.get() + " blocks)");
         }
         return owner.getOwner();
@@ -73,7 +73,7 @@ public class InventoryManagerCurioPlugin implements IPeripheralPlugin {
     }
 
     @LuaFunction(mainThread = true)
-    public final boolean removeCurioFromPlayer(String invDirection, int slot, Optional<String> item) throws LuaException{
+    public final boolean removeCurioFromPlayer(String invDirection, int slot, Optional<String> item) throws LuaException {
         Direction direction = validateSide(invDirection);
         BlockEntity targetEntity = Objects.requireNonNull(owner.getLevel()).getBlockEntity(owner.getPos().relative(direction));
         IItemHandler inventoryTo = targetEntity != null ? targetEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction).resolve().orElse(null) : null;
@@ -95,13 +95,13 @@ public class InventoryManagerCurioPlugin implements IPeripheralPlugin {
                                 if (!stacksHandler.getStacks().getStackInSlot(curioSlotInHandler).isEmpty()) {
                                     ItemStack curioStack = stacksHandler.getStacks().getStackInSlot(curioSlotInHandler);
                                     if (item.isPresent()) {
-                                        if (Objects.requireNonNull(ItemUtil.getRegistryEntry(item.get(), ForgeRegistries.ITEMS)).asItem() == curioStack.getItem()){
+                                        if (Objects.requireNonNull(ItemUtil.getRegistryEntry(item.get(), ForgeRegistries.ITEMS)).asItem() == curioStack.getItem()) {
                                             //Transfer the items
                                             stacksHandler.getStacks().setStackInSlot(curioSlotInHandler, ItemStack.EMPTY);
                                             inventoryTo.insertItem(i, curioStack, false);
                                             return true;
                                         }
-                                    }else{
+                                    } else {
                                         //Transfer the items
                                         stacksHandler.getStacks().setStackInSlot(curioSlotInHandler, ItemStack.EMPTY);
                                         inventoryTo.insertItem(i, curioStack, false);
