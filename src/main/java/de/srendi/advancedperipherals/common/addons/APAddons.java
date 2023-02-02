@@ -31,11 +31,10 @@ public class APAddons {
 
     }
 
-    @SubscribeEvent
-    public static void interModComms(InterModEnqueueEvent event) {
-        if (!curiosLoaded)
-            return;
-
-        InterModComms.sendTo("curios", SlotTypeMessage.REGISTER_TYPE, () -> new SlotTypeMessage.Builder("glasses").size(1).build());
-    }
+    //@SubscribeEvent
+    //public static void interModComms(InterModEnqueueEvent event) {
+    //    if (!curiosLoaded)
+    //        return;
+    //    InterModComms.sendTo("curios", SlotTypeMessage.REGISTER_TYPE, () -> new SlotTypeMessage.Builder("glasses").size(1).build());
+    //}
 }

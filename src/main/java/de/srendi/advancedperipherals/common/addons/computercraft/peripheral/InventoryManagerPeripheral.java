@@ -4,12 +4,14 @@ import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
 import de.srendi.advancedperipherals.AdvancedPeripherals;
 import de.srendi.advancedperipherals.common.addons.computercraft.owner.BlockEntityPeripheralOwner;
+import de.srendi.advancedperipherals.common.addons.computercraft.owner.IPeripheralOwner;
 import de.srendi.advancedperipherals.common.blocks.blockentities.InventoryManagerEntity;
 import de.srendi.advancedperipherals.common.configuration.APConfig;
 import de.srendi.advancedperipherals.common.util.InventoryUtil;
 import de.srendi.advancedperipherals.common.util.ItemUtil;
 import de.srendi.advancedperipherals.common.util.LuaConverter;
 import de.srendi.advancedperipherals.lib.peripherals.BasePeripheral;
+import de.srendi.advancedperipherals.lib.peripherals.IPeripheralPlugin;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
@@ -26,17 +28,24 @@ import net.minecraftforge.items.wrapper.PlayerInvWrapper;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 
 public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeripheralOwner<InventoryManagerEntity>> {
 
     public static final String TYPE = "inventoryManager";
 
+    private static final List<Function<IPeripheralOwner, IPeripheralPlugin>> PLUGINS = new LinkedList<>();
+
     public InventoryManagerPeripheral(InventoryManagerEntity tileEntity) {
         super(TYPE, new BlockEntityPeripheralOwner<>(tileEntity));
+
+        for (Function<IPeripheralOwner, IPeripheralPlugin> plugin : PLUGINS)
+            addPlugin(plugin.apply(owner));
+    }
+
+    public static void addIntegrationPlugin(Function<IPeripheralOwner, IPeripheralPlugin> plugin) {
+        PLUGINS.add(plugin);
     }
 
     private static int getArmorSlot(int index) {
