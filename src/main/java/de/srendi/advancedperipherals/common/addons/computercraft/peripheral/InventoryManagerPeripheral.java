@@ -395,6 +395,14 @@ public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeriph
         return LuaConverter.stackToObject(getOwnerPlayer().getOffhandItem());
     }
 
+    @LuaFunction(mainThread = true)
+    public final boolean isPlayerInRange() throws LuaException {
+        if (owner.getOwner() == null) {
+            throw new LuaException("The Inventory Manager doesn't have a memory card or it isn't bound to a player.");
+        }
+        return !(owner.getOwner().position().distanceTo(new Vec3(owner.getPos().getX(), owner.getPos().getY(), owner.getPos().getZ())) > APConfig.PERIPHERALS_CONFIG.inventoryManagerRange.get());
+    }
+
     private ItemStack insertItem(IItemHandler inventoryTo, ItemStack stack) {
         for (int i = 0; i < inventoryTo.getSlots(); i++) {
             if (stack.isEmpty()) break;
@@ -404,6 +412,7 @@ public class InventoryManagerPeripheral extends BasePeripheral<BlockEntityPeriph
         }
         return stack;
     }
+
 
     private Player getOwnerPlayer() throws LuaException {
         if (owner.getOwner() == null) {
